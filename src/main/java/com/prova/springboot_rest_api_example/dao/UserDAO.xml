@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+		"-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prova.springboot_rest_api_example.dao.UserDAO">
+
+	<select id="searchFilteredUsers" resultMap="userResultMap">
+		SELECT
+			USR_ID_PK,
+			USR_NAME,
+			USR_SURNAME,
+			USR_EMAIL,
+			USR_ADDRESS
+		FROM USERS
+		<where>
+			<if test="filter.getName() != null">
+				AND USR_NAME LIKE UPPER('%' || TRIM(#{filter.name, jdbcType=VARCHAR}) || '%')
+			</if>
+			<if test="filter.getSurname() != null">
+				AND USR_SURNAME LIKE UPPER('%' || TRIM(#{filter.surname, jdbcType=VARCHAR}) || '%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="findById" resultMap="userResultMap">
+		SELECT
+			USR_ID_PK,
+			USR_NAME,
+			USR_SURNAME,
+			USR_EMAIL,
+			USR_ADDRESS
+		FROM USERS
+		WHERE USR_ID_PK = #{userId, jdbcType=BIGINT}
+	</select>
+	
+	<insert id="insert">
+		<selectKey order="BEFORE" resultType="java.lang.Long" keyProperty="id">
+			SELECT nextval('SEQ_USERS')
+		</selectKey>
+		INSERT INTO USERS (
+			USR_ID_PK,
+			USR_NAME,
+			USR_SURNAME,
+			USR_EMAIL,
+			USR_ADDRESS,
+			HST_INS_DATE,
+			HST_UPD_DATE
+		) VALUES (
+			#{id, jdbcType=BIGINT},
+			#{user.name, jdbcType=VARCHAR},
+			#{user.surname, jdbcType=VARCHAR},
+			#{user.email, jdbcType=VARCHAR},
+			#{user.address, jdbcType=VARCHAR},
+			CURRENT_TIMESTAMP,
+			CURRENT_TIMESTAMP
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE USERS SET
+			USR_NAME = #{user.name, jdbcType=VARCHAR},
+			USR_SURNAME = #{user.surname, jdbcType=VARCHAR},
+			USR_EMAIL = #{user.email, jdbcType=VARCHAR},
+			USR_ADDRESS = #{user.address, jdbcType=VARCHAR},
+			HST_UPD_DATE = CURRENT_TIMESTAMP
+		WHERE
+			USR_ID_PK = #{user.id, jdbcType=BIGINT}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM USERS
+		WHERE USR_ID_PK = #{userId, jdbcType=BIGINT}
+	</delete>
+	
+	<resultMap id="userResultMap" type="com.prova.springboot_rest_api_example.model.User">
+		<id property="id" column="USR_ID_PK" />
+		<result property="name" column="USR_NAME" />
+		<result property="surname" column="USR_SURNAME" />
+		<result property="email" column="USR_EMAIL" />
+		<result property="address" column="USR_ADDRESS" />
+	</resultMap>
+</mapper>
